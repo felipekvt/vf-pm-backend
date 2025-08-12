@@ -1,0 +1,121 @@
+generator client { provider = "prisma-client-js" }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PLANNER
+  TECH
+  VIEWER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  memberships Membership[]
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  members   Membership[]
+  assets     Asset[]
+  workOrders WorkOrder[]
+  pmPlans    PMPlan[]
+}
+
+model Membership {
+  id     String @id @default(cuid())
+  userId String
+  orgId  String
+  role   Role   @default(VIEWER)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name      String
+  location  String?
+  createdAt DateTime @default(now())
+  sensors   Sensor[]
+  workOrders WorkOrder[]
+}
+
+model Sensor {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  kind      String
+  unit      String
+  hi        Float?
+  createdAt DateTime @default(now())
+  readings  Reading[]
+}
+
+model Reading {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  sensorId  String
+  sensor    Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  value     Float
+  ts        DateTime @default(now())
+}
+
+enum WorkOrderStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+}
+
+model WorkOrder {
+  id            String          @id @default(cuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  assetId       String
+  asset         Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  status        WorkOrderStatus @default(OPEN)
+  createdById   String
+  createdBy     User            @relation("createdBy", fields: [createdById], references: [id])
+  assignedToId  String?
+  assignedTo    User?           @relation("assignedTo", fields: [assignedToId], references: [id])
+  createdAt     DateTime        @default(now())
+  tasks         ChecklistItem[]
+}
+
+model ChecklistItem {
+  id         String   @id @default(cuid())
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  text       String
+  done       Boolean  @default(false)
+}
+
+model PMPlan {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  name      String
+  everyDays Int
+  lastRun   DateTime?
+  createdAt DateTime @default(now())
+}
