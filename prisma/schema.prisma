@@ -116,4 +116,12 @@ model ChecklistItem {
 
 model PMPlan {
   id        String       @id @default(cuid())
-  orgId     St
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  assetId   String
+  asset     Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  name      String
+  everyDays Int
+  lastRun   DateTime?
+  createdAt DateTime     @default(now())
+}
