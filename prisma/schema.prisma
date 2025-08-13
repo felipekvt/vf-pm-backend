@@ -31,6 +31,10 @@ model Organization {
   assets     Asset[]
   workOrders WorkOrder[]
   pmPlans    PMPlan[]
+
+  // ❗ lados opostos adicionados
+  sensors    Sensor[]
+  readings   Reading[]
 }
 
 model Membership {
@@ -39,8 +43,8 @@ model Membership {
   orgId  String
   role   Role   @default(VIEWER)
 
-  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  org  Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([userId, orgId])
 }
@@ -112,12 +116,4 @@ model ChecklistItem {
 
 model PMPlan {
   id        String       @id @default(cuid())
-  orgId     String
-  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  assetId   String
-  asset     Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  name      String
-  everyDays Int
-  lastRun   DateTime?
-  createdAt DateTime     @default(now())
-}
+  orgId     St
