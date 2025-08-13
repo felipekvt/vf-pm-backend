@@ -20,6 +20,11 @@ model User {
   email       String        @unique
   password    String
   createdAt   DateTime      @default(now())
+
+  // Lados opostos necessários para WorkOrder
+  createdWorkOrders  WorkOrder[] @relation("createdBy")
+  assignedWorkOrders WorkOrder[] @relation("assignedTo")
+
   memberships Membership[]
 }
 
@@ -27,12 +32,13 @@ model Organization {
   id         String        @id @default(cuid())
   name       String
   createdAt  DateTime      @default(now())
+
   members    Membership[]
   assets     Asset[]
   workOrders WorkOrder[]
   pmPlans    PMPlan[]
 
-  // ❗ lados opostos adicionados
+  // Lados opostos de relações diretas
   sensors    Sensor[]
   readings   Reading[]
 }
@@ -56,8 +62,12 @@ model Asset {
   name       String
   location   String?
   createdAt  DateTime      @default(now())
+
   sensors    Sensor[]
   workOrders WorkOrder[]
+
+  // Lado oposto de PMPlan.asset
+  pmPlans    PMPlan[]
 }
 
 model Sensor {
@@ -98,10 +108,13 @@ model WorkOrder {
   title        String
   description  String?
   status       WorkOrderStatus @default(OPEN)
+
   createdById  String
-  createdBy    User            @relation("createdBy", fields: [createdById], references: [id])
+  createdBy    User            @relation("createdBy",  fields: [createdById],  references: [id])
+
   assignedToId String?
   assignedTo   User?           @relation("assignedTo", fields: [assignedToId], references: [id])
+
   createdAt    DateTime        @default(now())
   tasks        ChecklistItem[]
 }
@@ -118,8 +131,10 @@ model PMPlan {
   id        String       @id @default(cuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
   assetId   String
   asset     Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
   name      String
   everyDays Int
   lastRun   DateTime?
