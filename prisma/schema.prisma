@@ -21,7 +21,6 @@ model User {
   password    String
   createdAt   DateTime      @default(now())
 
-  // Lados opostos necessários para WorkOrder
   createdWorkOrders  WorkOrder[] @relation("createdBy")
   assignedWorkOrders WorkOrder[] @relation("assignedTo")
 
@@ -38,7 +37,6 @@ model Organization {
   workOrders WorkOrder[]
   pmPlans    PMPlan[]
 
-  // Lados opostos de relações diretas
   sensors    Sensor[]
   readings   Reading[]
 }
@@ -53,6 +51,7 @@ model Membership {
   org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([userId, orgId])
+  @@index([orgId])
 }
 
 model Asset {
@@ -64,10 +63,12 @@ model Asset {
   createdAt  DateTime      @default(now())
   sensors    Sensor[]
   workOrders WorkOrder[]
-  pmPlans     PMPlan[] 
+  pmPlans    PMPlan[]
 
   @@unique([orgId, name])
+  @@index([orgId])
 }
+
 model Sensor {
   id        String        @id @default(cuid())
   orgId     String
@@ -79,6 +80,9 @@ model Sensor {
   hi        Float?
   createdAt DateTime      @default(now())
   readings  Reading[]
+
+  @@index([orgId])
+  @@index([assetId])
 }
 
 model Reading {
@@ -89,6 +93,9 @@ model Reading {
   sensor    Sensor        @relation(fields: [sensorId], references: [id], onDelete: Cascade)
   value     Float
   ts        DateTime      @default(now())
+
+  @@index([orgId])
+  @@index([sensorId])
 }
 
 enum WorkOrderStatus {
@@ -111,10 +118,16 @@ model WorkOrder {
   createdBy    User            @relation("createdBy",  fields: [createdById],  references: [id])
 
   assignedToId String?
-  assignedTo   User?           @relation("assignedTo", fields: [assignedToId], references: [id])
+  assignedTo   User?           @relation("assignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
 
   createdAt    DateTime        @default(now())
   tasks        ChecklistItem[]
+  comments     Comment[]
+
+  @@index([orgId])
+  @@index([assetId])
+  @@index([createdById])
+  @@index([assignedToId])
 }
 
 model ChecklistItem {
@@ -123,6 +136,8 @@ model ChecklistItem {
   workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
   text        String
   done        Boolean   @default(false)
+
+  @@index([workOrderId])
 }
 
 model PMPlan {
@@ -135,5 +150,25 @@ model PMPlan {
   everyDays Int
   lastRun   DateTime?
   createdAt DateTime      @default(now())
+
+  @@index([orgId])
+  @@index([assetId])
 }
 
+model Comment {
+  id         String    @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  text       String
+  createdAt  DateTime  @default(now())
+
+  @@index([orgId])
+  @@index([workOrderId])
+}
