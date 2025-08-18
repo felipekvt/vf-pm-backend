@@ -62,14 +62,11 @@ model Asset {
   name       String
   location   String?
   createdAt  DateTime      @default(now())
-
   sensors    Sensor[]
   workOrders WorkOrder[]
 
-  // Lado oposto de PMPlan.asset
-  pmPlans    PMPlan[]
+  @@unique([orgId, name])
 }
-
 model Sensor {
   id        String        @id @default(cuid())
   orgId     String
