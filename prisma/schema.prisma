@@ -64,6 +64,7 @@ model Asset {
   createdAt  DateTime      @default(now())
   sensors    Sensor[]
   workOrders WorkOrder[]
+  pmPlans     PMPlan[] 
 
   @@unique([orgId, name])
 }
@@ -125,15 +126,14 @@ model ChecklistItem {
 }
 
 model PMPlan {
-  id        String       @id @default(cuid())
+  id        String        @id @default(cuid())
   orgId     String
-  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-
+  org       Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
   assetId   String
-  asset     Asset        @relation(fields: [assetId], references: [id], onDelete: Cascade)
-
+  asset     Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
   name      String
   everyDays Int
   lastRun   DateTime?
-  createdAt DateTime     @default(now())
+  createdAt DateTime      @default(now())
 }
+
