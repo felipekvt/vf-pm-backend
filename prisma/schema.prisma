@@ -25,6 +25,7 @@ model User {
   assignedWorkOrders WorkOrder[] @relation("assignedTo")
 
   memberships Membership[]
+  comments    Comment[]          // lado oposto de Comment.author
 }
 
 model Organization {
@@ -39,6 +40,7 @@ model Organization {
 
   sensors    Sensor[]
   readings   Reading[]
+  comments   Comment[]      // lado oposto de Comment.org
 }
 
 model Membership {
@@ -156,18 +158,18 @@ model PMPlan {
 }
 
 model Comment {
-  id         String    @id @default(cuid())
-  orgId      String
-  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id          String       @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   workOrderId String
-  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  workOrder   WorkOrder    @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
 
-  authorId   String
-  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  text       String
-  createdAt  DateTime  @default(now())
+  text        String
+  createdAt   DateTime     @default(now())
 
   @@index([orgId])
   @@index([workOrderId])
